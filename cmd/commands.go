@@ -57,6 +57,7 @@ func play(out io.Writer, args []string, albums collections.Collection) error {
 		for i := range as {
 			if as[i].Name == args[0] {
 				as[i].Play()
+				fmt.Fprintf(out, "\nYou're listening to %q\n\n", as[i].Name)
 				return nil
 			}
 		}
