@@ -81,5 +81,5 @@ func play(out io.Writer, args []string, albums collections.Collection, filters .
 }
 
 func quit(out io.Writer) {
-	fmt.Fprintln(out, "\nBye!")
+	fmt.Fprintf(out, "\nBye!\n\n")
 }

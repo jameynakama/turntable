@@ -112,7 +112,6 @@ func TestShow(t *testing.T) {
 			assert.Equal(t, tc.expected, buf.String())
 		})
 	}
-
 }
 
 func TestPlay(t *testing.T) {
@@ -163,4 +162,10 @@ func TestPlay(t *testing.T) {
 			assert.Equal(t, tc.expected, albums["Hoobastank"][0].IsPlayed)
 		})
 	}
+}
+
+func TestQuit(t *testing.T) {
+	var buf bytes.Buffer
+	quit(&buf)
+	assert.Equal(t, "\nBye!\n\n", buf.String())
 }
