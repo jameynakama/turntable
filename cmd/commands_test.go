@@ -144,13 +144,13 @@ func TestPlay(t *testing.T) {
 			ErrAlbumNotFound("Love Gun"),
 		},
 		{
-			"ErrWrongNumberOfArgsZero",
+			"ErrWrongNumberOfArgs-Zero",
 			nil,
 			false,
 			ErrWrongNumberOfArgs(1, "an album name"),
 		},
 		{
-			"ErrWrongNumberOfArgsTwo",
+			"ErrWrongNumberOfArgs-Two",
 			[]string{"Love Gun", "KISS"},
 			false,
 			ErrWrongNumberOfArgs(1, "an album name"),
