@@ -26,11 +26,11 @@ func add(out io.Writer, input string, albums collection) error {
 	}
 
 	artist := fields[2]
-	song := album{fields[1], false}
+	album := album{fields[1], false}
 
-	albums[fields[2]] = append(albums[artist], song)
+	albums[fields[2]] = append(albums[artist], album)
 
-	fmt.Printf("\nAdded %q by %s\n\n", song.name, artist)
+	fmt.Fprintf(out, "\nAdded %q by %s\n\n", album.name, artist)
 
 	return nil
 }
@@ -63,10 +63,10 @@ func showAll(out io.Writer, input string, albums collection) error {
 
 // STUB
 func play(out io.Writer, input string, albums collection) error {
-	fmt.Println("You chose \"play\"")
+	fmt.Fprintln(out, "You chose \"play\"")
 	return nil
 }
 
-func quit() {
-	fmt.Println("\nBye!")
+func quit(out io.Writer) {
+	fmt.Fprintln(out, "\nBye!")
 }

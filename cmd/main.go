@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	// "errors"
 	"fmt"
 	"io"
 	"os"
@@ -49,7 +48,7 @@ func run(cfg config) error {
 	}
 
 	for {
-		input, command, err := promptUser(cfg.in, cfg.albums)
+		input, command, err := promptUser(cfg.in, cfg.out, cfg.albums)
 
 		var commandFn collectionCmd
 		switch command {
@@ -60,25 +59,25 @@ func run(cfg config) error {
 		case "show all":
 			commandFn = showAll
 		case "quit":
-			quit()
+			quit(cfg.out)
 			return nil
 		default:
-			fmt.Printf("\n%q is not a valid command\n\n", input)
+			fmt.Fprintf(cfg.out, "\n%q is not a valid command\n\n", input)
 			continue
 		}
 
 		err = commandFn(cfg.out, input, cfg.albums)
 		if err != nil {
-			fmt.Printf("\nError processing command: %s\n\n", err.Error())
+			fmt.Fprintf(cfg.out, "\nError processing command: %s\n\n", err.Error())
 			continue
 		}
 	}
 }
 
-func promptUser(r io.Reader, albums collection) (string, string, error) {
-	fmt.Print("> ")
+func promptUser(in io.Reader, out io.Writer, albums collection) (string, string, error) {
+	fmt.Fprint(out, "> ")
 
-	s := bufio.NewScanner(r)
+	s := bufio.NewScanner(in)
 	input, err := internal.ScanString(s)
 	if err != nil {
 		return "", "", err
