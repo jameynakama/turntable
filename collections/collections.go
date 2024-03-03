@@ -1,16 +1,13 @@
 package collections
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"slices"
 )
 
-const (
-	ALL = iota
-	PLAYED
-	UNPLAYED
-)
+var ErrWrongNumberOfArtists = errors.New("Please provide 1 quoted artist name")
 
 type Collection map[string][]Album
 
@@ -36,7 +33,7 @@ func (c Collection) Add(album Album, artist string) {
 }
 
 // Prints stored albums according to query, sorted by artist name
-func (c Collection) Show(out io.Writer, query int) error {
+func (c Collection) Show(out io.Writer, subcommand string, filter ...string) error {
 	artists := c.sortArtists()
 
 	if _, err := fmt.Fprintln(out); err != nil {
@@ -45,13 +42,24 @@ func (c Collection) Show(out io.Writer, query int) error {
 
 	for _, artist := range artists {
 		for _, album := range c[artist] {
-			switch query {
-			case UNPLAYED:
+			switch subcommand {
+			case "all":
+				album.show(out, artist)
+			case "unplayed":
 				if !album.IsPlayed {
 					album.show(out, artist)
 				}
+			case "all by":
+				// TODO: Handle no artist
+				if len(filter) != 1 {
+					return ErrWrongNumberOfArtists
+				}
+				if filter[0] == artist {
+					album.show(out, artist)
+				}
 			default:
-				album.show(out, artist)
+				// TODO: Unrecognized command
+				// album.show(out, artist)
 			}
 		}
 	}

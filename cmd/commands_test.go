@@ -67,10 +67,11 @@ func TestShow(t *testing.T) {
 	testCases := []struct {
 		name     string
 		fn       CollectionCmd
+		filter   string
 		expected string
 	}{
 		{
-			"All", showAll, `
+			"All", showAll, "", `
 "Night Visions" by Imagine Dragons (unplayed)
 "Evolve" by Imagine Dragons (played)
 "Hotter than Hell" by KISS (unplayed)
@@ -79,9 +80,16 @@ func TestShow(t *testing.T) {
 `,
 		},
 		{
-			"Unplayed", showUnplayed, `
+			"Unplayed", showUnplayed, "", `
 "Night Visions" by Imagine Dragons (unplayed)
 "Hotter than Hell" by KISS (unplayed)
+
+`,
+		},
+		{
+			"By", showAllBy, "Imagine Dragons", `
+"Night Visions" by Imagine Dragons (unplayed)
+"Evolve" by Imagine Dragons (played)
 
 `,
 		},
@@ -90,7 +98,7 @@ func TestShow(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var buf bytes.Buffer
-			err := tc.fn(&buf, nil, albums)
+			err := tc.fn(&buf, nil, albums, tc.filter)
 			if err != nil {
 				t.Fatal(err)
 			}

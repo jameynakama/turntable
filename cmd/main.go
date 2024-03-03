@@ -46,6 +46,8 @@ func run(cfg config) error {
 			commandFn = play
 		case "show all":
 			commandFn = showAll
+		case "show all by":
+			commandFn = showAllBy
 		case "show unplayed":
 			commandFn = showUnplayed
 		case "quit":
@@ -56,7 +58,8 @@ func run(cfg config) error {
 			continue
 		}
 
-		err = commandFn(cfg.out, args, cfg.albums)
+		// Looks weird, but some commands need a variable number of extra args
+		err = commandFn(cfg.out, args, cfg.albums, args...)
 		if err != nil {
 			fmt.Fprintf(cfg.out, "\nError processing command: %s\n\n", err.Error())
 			continue
