@@ -2,33 +2,24 @@ package main
 
 import (
 	"bufio"
+	"encoding/csv"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 
+	"github.com/jameynakama/turntable/collections"
 	"github.com/jameynakama/turntable/internal"
 )
 
-type album struct {
-	name     string
-	isPlayed bool
-}
-
-type collection map[string][]album
-
 type config struct {
-	albums collection
+	albums collections.Collection
 	in     io.Reader
 	out    io.Writer
 }
 
-func newCollection() collection {
-	return make(map[string][]album)
-}
-
 func main() {
-	var albums = newCollection()
+	var albums = collections.New()
 	var cfg = config{
 		albums: albums,
 		in:     os.Stdin,
@@ -48,9 +39,9 @@ func run(cfg config) error {
 	}
 
 	for {
-		input, command, err := promptUser(cfg.in, cfg.out, cfg.albums)
+		command, args, err := promptUser(cfg.in, cfg.out, cfg.albums)
 
-		var commandFn collectionCmd
+		var commandFn CollectionCmd
 		switch command {
 		case "add":
 			commandFn = add
@@ -62,11 +53,11 @@ func run(cfg config) error {
 			quit(cfg.out)
 			return nil
 		default:
-			fmt.Fprintf(cfg.out, "\n%q is not a valid command\n\n", input)
+			fmt.Fprintf(cfg.out, "\n%q is not a valid command\n\n", command)
 			continue
 		}
 
-		err = commandFn(cfg.out, input, cfg.albums)
+		err = commandFn(cfg.out, args, cfg.albums)
 		if err != nil {
 			fmt.Fprintf(cfg.out, "\nError processing command: %s\n\n", err.Error())
 			continue
@@ -74,13 +65,13 @@ func run(cfg config) error {
 	}
 }
 
-func promptUser(in io.Reader, out io.Writer, albums collection) (string, string, error) {
+func promptUser(in io.Reader, out io.Writer, albums collections.Collection) (string, []string, error) {
 	fmt.Fprint(out, "> ")
 
 	s := bufio.NewScanner(in)
 	input, err := internal.ScanString(s)
 	if err != nil {
-		return "", "", err
+		return "", nil, err
 	}
 
 	var command = input
@@ -88,5 +79,20 @@ func promptUser(in io.Reader, out io.Writer, albums collection) (string, string,
 		command = input[:idx]
 	}
 
-	return input, strings.TrimSpace(command), nil
+	args, err := getArgs(input)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return strings.TrimSpace(command), args, nil
+}
+
+func getArgs(input string) ([]string, error) {
+	r := csv.NewReader(strings.NewReader(input))
+	r.Comma = ' '
+	fields, err := r.Read()
+	if err != nil {
+		return nil, fmt.Errorf("Err: %v", err)
+	}
+	return fields, nil
 }

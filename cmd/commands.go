@@ -1,70 +1,59 @@
 package main
 
 import (
-	"encoding/csv"
 	"fmt"
 	"io"
-	"slices"
-	"strings"
+
+	"github.com/jameynakama/turntable/collections"
 )
 
-// TODO: Use "out" arg, not stdout
+func ErrAlbumNotFound(albumName string) error {
+	return fmt.Errorf("Album %q not found", albumName)
+}
 
-type collectionCmd func(io.Writer, string, collection) error
+func ErrWrongNumberOfArgs(n int, s string) error {
+	return fmt.Errorf("Please provide %d quoted args: %s", n, s)
+}
+
+type CollectionCmd func(io.Writer, []string, collections.Collection) error
 
 // Adds an album to the collection. The first quoted string is the album title,
 // and the second is the band name.
-func add(out io.Writer, input string, albums collection) error {
-	r := csv.NewReader(strings.NewReader(input))
-	r.Comma = ' '
-	fields, err := r.Read()
-	if err != nil {
-		return fmt.Errorf("Err: %v", err)
-	}
-	if len(fields) != 3 {
-		return fmt.Errorf("Please provide 2 quoted args: an album and an artist")
+func add(out io.Writer, args []string, albums collections.Collection) error {
+	if len(args) != 2 {
+		return ErrWrongNumberOfArgs(2, "an album and an artist")
 	}
 
-	artist := fields[2]
-	album := album{fields[1], false}
+	artist := args[1]
+	album := collections.Album{Name: args[0], IsPlayed: false}
 
-	albums[fields[2]] = append(albums[artist], album)
+	albums.Add(album, artist)
 
-	fmt.Fprintf(out, "\nAdded %q by %s\n\n", album.name, artist)
+	fmt.Fprintf(out, "\nAdded %q by %s\n\n", album.Name, artist)
 
 	return nil
 }
 
-// Prints all stored albums, sorted by artist name
-func showAll(out io.Writer, input string, albums collection) error {
-	artists := make([]string, len(albums))
-	i := 0
-	for a := range albums {
-		artists[i] = a
-		i++
-	}
-	slices.Sort(artists)
+func showAll(out io.Writer, args []string, albums collections.Collection) error {
+	albums.ShowAll(out)
+	return nil
+}
 
-	fmt.Fprintln(out)
-	for _, artist := range artists {
-		for _, song := range albums[artist] {
-			var played string
-			if song.isPlayed {
-				played = "played"
-			} else {
-				played = "unplayed"
+func play(out io.Writer, args []string, albums collections.Collection) error {
+	if len(args) != 1 {
+		return ErrWrongNumberOfArgs(1, "an album name")
+	}
+
+	for _, as := range albums {
+		for i := range as {
+			if as[i].Name == args[0] {
+				as[i].Play()
+				return nil
 			}
-			fmt.Fprintf(out, "%q by %s (%s)\n", song.name, artist, played)
 		}
 	}
-	fmt.Fprintln(out)
-	return nil
-}
 
-// STUB
-func play(out io.Writer, input string, albums collection) error {
-	fmt.Fprintln(out, "You chose \"play\"")
-	return nil
+	return ErrAlbumNotFound(args[0])
 }
 
 func quit(out io.Writer) {

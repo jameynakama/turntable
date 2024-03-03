@@ -2,58 +2,51 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"testing"
 
+	"github.com/jameynakama/turntable/collections"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAdd(t *testing.T) {
 	testCases := []struct {
 		name     string
-		albums   collection
-		input    string
-		expected []album
+		albums   collections.Collection
+		input    []string
+		expected []collections.Album
 		expErr   error
 	}{
 		{
 			"AddsAlbum",
-			newCollection(),
-			"add \"Hoobastank\" \"Hoobastank\"",
-			[]album{{"Hoobastank", false}},
+			collections.New(),
+			[]string{"Hoobastank", "Hoobastank"},
+			[]collections.Album{{Name: "Hoobastank", IsPlayed: false}},
 			nil,
 		},
 		{
-			"ErrInvalidArgsOne",
-			newCollection(),
-			"add \"Hoobastank\"",
-			[]album(nil),
-			fmt.Errorf("Please provide 2 quoted args: an album and an artist"),
+			"ErrWrongNumberOfArgsOne",
+			collections.New(),
+			[]string{"Hoobastank"},
+			[]collections.Album(nil),
+			ErrWrongNumberOfArgs(2, "an album and an artist"),
 		},
 		{
-			"ErrInvalidArgsThree",
-			newCollection(),
-			"add \"Hoobastank\" \"Hoobastank\" \"Hoobastank\"",
-			[]album(nil),
-			fmt.Errorf("Please provide 2 quoted args: an album and an artist"),
-		},
-		{
-			"ErrParsingARgs",
-			newCollection(),
-			"add \"Hoobastank",
-			[]album(nil),
-			fmt.Errorf("Err: parse error on line 1, column 16: extraneous or missing \" in quoted-field"),
+			"ErrWrongNumberOfArgsThree",
+			collections.New(),
+			[]string{"Hoobastank", "Hoobastank", "Hoobastank"},
+			[]collections.Album(nil),
+			ErrWrongNumberOfArgs(2, "an album and an artist"),
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			err := add(io.Discard, tc.input, tc.albums)
-			assert.Equal(t, tc.expected, tc.albums["Hoobastank"])
 			if err != nil {
 				assert.Equal(t, tc.expErr, err)
 			}
+			assert.Equal(t, tc.expected, tc.albums["Hoobastank"])
 		})
 	}
 }
@@ -61,19 +54,19 @@ func TestAdd(t *testing.T) {
 func TestShowAll(t *testing.T) {
 	var buf bytes.Buffer
 
-	albums := newCollection()
-	albums["Imagine Dragons"] = []album{
-		{"Night Visions", false},
-		{"Evolve", true},
+	albums := collections.New()
+	albums["Imagine Dragons"] = []collections.Album{
+		{Name: "Night Visions", IsPlayed: false},
+		{Name: "Evolve", IsPlayed: true},
 	}
-	albums["Nickelback"] = []album{
-		{"Curb", true},
+	albums["Nickelback"] = []collections.Album{
+		{Name: "Curb", IsPlayed: true},
 	}
-	albums["KISS"] = []album{
-		{"Hotter than Hell", false},
+	albums["KISS"] = []collections.Album{
+		{Name: "Hotter than Hell", IsPlayed: false},
 	}
 
-	err := showAll(&buf, "", albums)
+	err := showAll(&buf, nil, albums)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -85,4 +78,54 @@ func TestShowAll(t *testing.T) {
 "Curb" by Nickelback (played)
 
 `, buf.String())
+}
+
+func TestPlay(t *testing.T) {
+	testCases := []struct {
+		name     string
+		input    []string
+		expected bool
+		expErr   error
+	}{
+		{
+			"SetsPlayed",
+			[]string{"Hoobastank"},
+			true,
+			nil,
+		},
+		{
+			"ErrAlbumNotFound",
+			[]string{"Love Gun"},
+			false,
+			ErrAlbumNotFound("Love Gun"),
+		},
+		{
+			"ErrWrongNumberOfArgsZero",
+			nil,
+			false,
+			ErrWrongNumberOfArgs(1, "an album name"),
+		},
+		{
+			"ErrWrongNumberOfArgsTwo",
+			[]string{"Love Gun", "KISS"},
+			false,
+			ErrWrongNumberOfArgs(1, "an album name"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			albums := collections.New()
+			albums["Hoobastank"] = []collections.Album{
+				{Name: "Hoobastank", IsPlayed: false},
+			}
+
+			err := play(io.Discard, tc.input, albums)
+			if err != nil {
+				assert.Equal(t, tc.expErr, err)
+			}
+
+			assert.Equal(t, tc.expected, albums["Hoobastank"][0].IsPlayed)
+		})
+	}
 }
