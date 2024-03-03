@@ -1,12 +1,9 @@
 package main
 
 import (
-	"bufio"
-	"encoding/csv"
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
 	"github.com/jameynakama/turntable/collections"
 	"github.com/jameynakama/turntable/internal"
@@ -39,7 +36,7 @@ func run(cfg config) error {
 	}
 
 	for {
-		command, args, err := promptUser(cfg.in, cfg.out, cfg.albums)
+		command, args, err := internal.PromptUser(cfg.in, cfg.out, cfg.albums)
 
 		var commandFn CollectionCmd
 		switch command {
@@ -63,36 +60,4 @@ func run(cfg config) error {
 			continue
 		}
 	}
-}
-
-func promptUser(in io.Reader, out io.Writer, albums collections.Collection) (string, []string, error) {
-	fmt.Fprint(out, "> ")
-
-	s := bufio.NewScanner(in)
-	input, err := internal.ScanString(s)
-	if err != nil {
-		return "", nil, err
-	}
-
-	var command = input
-	if idx := strings.IndexByte(input, '"'); idx >= 0 {
-		command = input[:idx]
-	}
-
-	args, err := getArgs(input)
-	if err != nil {
-		return "", nil, err
-	}
-
-	return strings.TrimSpace(command), args, nil
-}
-
-func getArgs(input string) ([]string, error) {
-	r := csv.NewReader(strings.NewReader(input))
-	r.Comma = ' '
-	fields, err := r.Read()
-	if err != nil {
-		return nil, fmt.Errorf("Err: %v", err)
-	}
-	return fields, nil
 }
