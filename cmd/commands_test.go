@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -41,11 +42,11 @@ func TestAdd(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// err := add(tc.input, tc.albums)
-			// assert.Equal(t, tc.expected, tc. albums["Moose Men"])
-			// if err != nil {
-			// 	assert.Equal(t, tc.expErr, err)
-			// }
+			err := add(io.Discard, tc.input, tc.albums)
+			assert.Equal(t, tc.expected, tc.albums["Moose Men"])
+			if err != nil {
+				assert.Equal(t, tc.expErr, err)
+			}
 		})
 	}
 }
