@@ -55,6 +55,13 @@ func showAllBy(out io.Writer, args []string, albums collections.Collection, filt
 	return nil
 }
 
+func showUnplayedBy(out io.Writer, args []string, albums collections.Collection, filters ...string) error {
+	if err := albums.Show(out, "unplayed by", filters...); err != nil {
+		return err
+	}
+	return nil
+}
+
 func play(out io.Writer, args []string, albums collections.Collection, filters ...string) error {
 	if len(args) != 1 {
 		return ErrWrongNumberOfArgs(1, "an album name")

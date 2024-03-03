@@ -44,10 +44,10 @@ func (c Collection) Show(out io.Writer, subcommand string, filter ...string) err
 		for _, album := range c[artist] {
 			switch subcommand {
 			case "all":
-				album.show(out, artist)
+				album.show(out, artist, true)
 			case "unplayed":
 				if !album.IsPlayed {
-					album.show(out, artist)
+					album.show(out, artist, false)
 				}
 			case "all by":
 				// TODO: Handle no artist
@@ -55,7 +55,15 @@ func (c Collection) Show(out io.Writer, subcommand string, filter ...string) err
 					return ErrWrongNumberOfArtists
 				}
 				if filter[0] == artist {
-					album.show(out, artist)
+					album.show(out, artist, true)
+				}
+			case "unplayed by":
+				// TODO: Handle no artist
+				if len(filter) != 1 {
+					return ErrWrongNumberOfArtists
+				}
+				if filter[0] == artist && !album.IsPlayed {
+					album.show(out, artist, false)
 				}
 			default:
 				// TODO: Unrecognized command
@@ -76,14 +84,16 @@ type Album struct {
 	IsPlayed bool
 }
 
-func (a *Album) show(out io.Writer, artist string) error {
-	var played string
-	if a.IsPlayed {
-		played = "played"
-	} else {
-		played = "unplayed"
+func (a *Album) show(out io.Writer, artist string, showPlayedStatus bool) error {
+	var playedStatus string
+	if showPlayedStatus {
+		if a.IsPlayed {
+			playedStatus = " (played)"
+		} else {
+			playedStatus = " (unplayed)"
+		}
 	}
-	if _, err := fmt.Fprintf(out, "%q by %s (%s)\n", a.Name, artist, played); err != nil {
+	if _, err := fmt.Fprintf(out, "%q by %s%s\n", a.Name, artist, playedStatus); err != nil {
 		return err
 	}
 	return nil

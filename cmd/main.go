@@ -50,6 +50,8 @@ func run(cfg config) error {
 			commandFn = showAllBy
 		case "show unplayed":
 			commandFn = showUnplayed
+		case "show unplayed by":
+			commandFn = showUnplayedBy
 		case "quit":
 			quit(cfg.out)
 			return nil

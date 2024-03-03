@@ -81,8 +81,8 @@ func TestShow(t *testing.T) {
 		},
 		{
 			"Unplayed", showUnplayed, "", `
-"Night Visions" by Imagine Dragons (unplayed)
-"Hotter than Hell" by KISS (unplayed)
+"Night Visions" by Imagine Dragons
+"Hotter than Hell" by KISS
 
 `,
 		},
@@ -90,6 +90,12 @@ func TestShow(t *testing.T) {
 			"By", showAllBy, "Imagine Dragons", `
 "Night Visions" by Imagine Dragons (unplayed)
 "Evolve" by Imagine Dragons (played)
+
+`,
+		},
+		{
+			"UnplayedBy", showUnplayedBy, "Imagine Dragons", `
+"Night Visions" by Imagine Dragons
 
 `,
 		},
