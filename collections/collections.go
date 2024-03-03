@@ -7,7 +7,10 @@ import (
 	"slices"
 )
 
-var ErrWrongNumberOfArtists = errors.New("Please provide 1 quoted artist name")
+var (
+	ErrWrongNumberOfArtists = errors.New("Please provide 1 quoted artist name")
+	ErrAlbumAlreadyExists   = errors.New("Album already exists")
+)
 
 type Collection map[string][]Album
 
@@ -28,8 +31,20 @@ func (c Collection) sortArtists() []string {
 }
 
 // Adds an album to the collection
-func (c Collection) Add(album Album, artist string) {
+func (c Collection) Add(album Album, artist string) error {
+	var albumNames []string
+	for _, albums := range c {
+		for _, album := range albums {
+			albumNames = append(albumNames, album.Name)
+		}
+	}
+	if slices.Index(albumNames, album.Name) != -1 {
+		return ErrAlbumAlreadyExists
+	}
+
 	c[artist] = append(c[artist], album)
+
+	return nil
 }
 
 // Prints stored albums according to query, sorted by artist name

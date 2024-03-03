@@ -27,7 +27,9 @@ func add(out io.Writer, args []string, albums collections.Collection, filters ..
 	artist := args[1]
 	album := collections.Album{Name: args[0], IsPlayed: false}
 
-	albums.Add(album, artist)
+	if err := albums.Add(album, artist); err != nil {
+		return err
+	}
 
 	fmt.Fprintf(out, "\nAdded %q by %s\n\n", album.Name, artist)
 

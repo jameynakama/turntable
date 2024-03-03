@@ -25,24 +25,34 @@ func TestAdd(t *testing.T) {
 			nil,
 		},
 		{
-			"ErrWrongNumberOfArgsOne",
+			"ErrWrongNumberOfArgs-One",
 			collections.New(),
 			[]string{"Hoobastank"},
 			[]collections.Album(nil),
 			ErrWrongNumberOfArgs(2, "an album and an artist"),
 		},
 		{
-			"ErrWrongNumberOfArgsThree",
+			"ErrWrongNumberOfArgs-Three",
 			collections.New(),
 			[]string{"Hoobastank", "Hoobastank", "Hoobastank"},
 			[]collections.Album(nil),
 			ErrWrongNumberOfArgs(2, "an album and an artist"),
+		},
+		{
+			"ErrAlbumAlreadyExists",
+			map[string][]collections.Album{"Creed": {{Name: "My Own Prison", IsPlayed: false}}},
+			[]string{"My Own Prison", "Creed"},
+			[]collections.Album(nil),
+			collections.ErrAlbumAlreadyExists,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			err := add(io.Discard, tc.input, tc.albums)
+			if tc.expErr != nil && err == nil {
+				t.Fatalf("Was expecting error %q but got none", tc.expErr)
+			}
 			if err != nil {
 				assert.Equal(t, tc.expErr, err)
 			}
