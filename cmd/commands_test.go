@@ -20,30 +20,37 @@ func TestAdd(t *testing.T) {
 		{
 			"AddsAlbum",
 			newCollection(),
-			"add \"Moose\" \"Moose Men\"",
-			[]album{{"Moose", false}},
+			"add \"Hoobastank\" \"Hoobastank\"",
+			[]album{{"Hoobastank", false}},
 			nil,
 		},
 		{
 			"ErrInvalidArgsOne",
 			newCollection(),
-			"add \"Moose\"",
+			"add \"Hoobastank\"",
 			[]album(nil),
 			fmt.Errorf("Please provide 2 quoted args: an album and an artist"),
 		},
 		{
 			"ErrInvalidArgsThree",
 			newCollection(),
-			"add \"Moose\" \"Moose Men\" \"Bogus\"",
+			"add \"Hoobastank\" \"Hoobastank\" \"Hoobastank\"",
 			[]album(nil),
 			fmt.Errorf("Please provide 2 quoted args: an album and an artist"),
+		},
+		{
+			"ErrParsingARgs",
+			newCollection(),
+			"add \"Hoobastank",
+			[]album(nil),
+			fmt.Errorf("Err: parse error on line 1, column 16: extraneous or missing \" in quoted-field"),
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			err := add(io.Discard, tc.input, tc.albums)
-			assert.Equal(t, tc.expected, tc.albums["Moose Men"])
+			assert.Equal(t, tc.expected, tc.albums["Hoobastank"])
 			if err != nil {
 				assert.Equal(t, tc.expErr, err)
 			}
@@ -74,8 +81,8 @@ func TestShowAll(t *testing.T) {
 	assert.Equal(t, `
 "Night Visions" by Imagine Dragons (unplayed)
 "Evolve" by Imagine Dragons (played)
-"Curb" by Nickelback (played)
 "Hotter than Hell" by KISS (unplayed)
+"Curb" by Nickelback (played)
 
 `, buf.String())
 }

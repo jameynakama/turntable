@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
 )
 
@@ -34,10 +35,18 @@ func add(out io.Writer, input string, albums collection) error {
 	return nil
 }
 
-// Prints all stored albums
+// Prints all stored albums, sorted by artist name
 func showAll(out io.Writer, input string, albums collection) error {
+	artists := make([]string, len(albums))
+	i := 0
+	for a := range albums {
+		artists[i] = a
+		i++
+	}
+	slices.Sort(artists)
+
 	fmt.Fprintln(out)
-	for artist := range albums {
+	for _, artist := range artists {
 		for _, song := range albums[artist] {
 			var played string
 			if song.isPlayed {
