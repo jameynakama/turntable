@@ -6,6 +6,12 @@ import (
 	"slices"
 )
 
+const (
+	ALL = iota
+	PLAYED
+	UNPLAYED
+)
+
 type Collection map[string][]Album
 
 // Returns a new empty collection
@@ -29,8 +35,8 @@ func (c Collection) Add(album Album, artist string) {
 	c[artist] = append(c[artist], album)
 }
 
-// Prints all stored albums, sorted by artist name
-func (c Collection) ShowAll(out io.Writer) error {
+// Prints stored albums according to query, sorted by artist name
+func (c Collection) Show(out io.Writer, query int) error {
 	artists := c.sortArtists()
 
 	if _, err := fmt.Fprintln(out); err != nil {
@@ -39,27 +45,12 @@ func (c Collection) ShowAll(out io.Writer) error {
 
 	for _, artist := range artists {
 		for _, album := range c[artist] {
-			album.show(out, artist)
-		}
-	}
-
-	if _, err := fmt.Fprintln(out); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c Collection) ShowUnplayed(out io.Writer) error {
-	artists := c.sortArtists()
-
-	if _, err := fmt.Fprintln(out); err != nil {
-		return err
-	}
-
-	for _, artist := range artists {
-		for _, album := range c[artist] {
-			if !album.IsPlayed {
+			switch query {
+			case UNPLAYED:
+				if !album.IsPlayed {
+					album.show(out, artist)
+				}
+			default:
 				album.show(out, artist)
 			}
 		}

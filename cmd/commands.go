@@ -35,14 +35,14 @@ func add(out io.Writer, args []string, albums collections.Collection) error {
 }
 
 func showAll(out io.Writer, args []string, albums collections.Collection) error {
-	if err := albums.ShowAll(out); err != nil {
+	if err := albums.Show(out, collections.ALL); err != nil {
 		return err
 	}
 	return nil
 }
 
 func showUnplayed(out io.Writer, args []string, albums collections.Collection) error {
-	if err := albums.ShowUnplayed(out); err != nil {
+	if err := albums.Show(out, collections.UNPLAYED); err != nil {
 		return err
 	}
 	return nil

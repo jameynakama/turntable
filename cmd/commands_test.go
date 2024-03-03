@@ -51,9 +51,7 @@ func TestAdd(t *testing.T) {
 	}
 }
 
-func TestShowAll(t *testing.T) {
-	var buf bytes.Buffer
-
+func TestShow(t *testing.T) {
 	albums := collections.New()
 	albums["Imagine Dragons"] = []collections.Album{
 		{Name: "Night Visions", IsPlayed: false},
@@ -66,45 +64,41 @@ func TestShowAll(t *testing.T) {
 		{Name: "Hotter than Hell", IsPlayed: false},
 	}
 
-	err := showAll(&buf, nil, albums)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	assert.Equal(t, `
+	testCases := []struct {
+		name     string
+		fn       CollectionCmd
+		expected string
+	}{
+		{
+			"All", showAll, `
 "Night Visions" by Imagine Dragons (unplayed)
 "Evolve" by Imagine Dragons (played)
 "Hotter than Hell" by KISS (unplayed)
 "Curb" by Nickelback (played)
 
-`, buf.String())
-}
-
-func TestShowUnplayed(t *testing.T) {
-	var buf bytes.Buffer
-
-	albums := collections.New()
-	albums["Imagine Dragons"] = []collections.Album{
-		{Name: "Night Visions", IsPlayed: false},
-		{Name: "Evolve", IsPlayed: true},
-	}
-	albums["Nickelback"] = []collections.Album{
-		{Name: "Curb", IsPlayed: true},
-	}
-	albums["KISS"] = []collections.Album{
-		{Name: "Hotter than Hell", IsPlayed: false},
-	}
-
-	err := showUnplayed(&buf, nil, albums)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	assert.Equal(t, `
+`,
+		},
+		{
+			"Unplayed", showUnplayed, `
 "Night Visions" by Imagine Dragons (unplayed)
 "Hotter than Hell" by KISS (unplayed)
 
-`, buf.String())
+`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			err := tc.fn(&buf, nil, albums)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			assert.Equal(t, tc.expected, buf.String())
+		})
+	}
+
 }
 
 func TestPlay(t *testing.T) {
