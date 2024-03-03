@@ -80,6 +80,33 @@ func TestShowAll(t *testing.T) {
 `, buf.String())
 }
 
+func TestShowUnplayed(t *testing.T) {
+	var buf bytes.Buffer
+
+	albums := collections.New()
+	albums["Imagine Dragons"] = []collections.Album{
+		{Name: "Night Visions", IsPlayed: false},
+		{Name: "Evolve", IsPlayed: true},
+	}
+	albums["Nickelback"] = []collections.Album{
+		{Name: "Curb", IsPlayed: true},
+	}
+	albums["KISS"] = []collections.Album{
+		{Name: "Hotter than Hell", IsPlayed: false},
+	}
+
+	err := showUnplayed(&buf, nil, albums)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, `
+"Night Visions" by Imagine Dragons (unplayed)
+"Hotter than Hell" by KISS (unplayed)
+
+`, buf.String())
+}
+
 func TestPlay(t *testing.T) {
 	testCases := []struct {
 		name     string

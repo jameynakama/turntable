@@ -35,7 +35,16 @@ func add(out io.Writer, args []string, albums collections.Collection) error {
 }
 
 func showAll(out io.Writer, args []string, albums collections.Collection) error {
-	albums.ShowAll(out)
+	if err := albums.ShowAll(out); err != nil {
+		return err
+	}
+	return nil
+}
+
+func showUnplayed(out io.Writer, args []string, albums collections.Collection) error {
+	if err := albums.ShowUnplayed(out); err != nil {
+		return err
+	}
 	return nil
 }
 
