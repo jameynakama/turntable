@@ -10,6 +10,7 @@ import (
 var (
 	ErrWrongNumberOfArtists = errors.New("Please provide 1 quoted artist name")
 	ErrAlbumAlreadyExists   = errors.New("Album already exists")
+	ErrInvalidSubcommand    = errors.New("Unrecognized subcommand")
 )
 
 type Collection map[string][]Album
@@ -51,9 +52,7 @@ func (c Collection) Add(album Album, artist string) error {
 func (c Collection) Show(out io.Writer, subcommand string, filter ...string) error {
 	artists := c.sortArtists()
 
-	if _, err := fmt.Fprintln(out); err != nil {
-		return err
-	}
+	fmt.Fprintln(out)
 
 	for _, artist := range artists {
 		for _, album := range c[artist] {
@@ -65,31 +64,32 @@ func (c Collection) Show(out io.Writer, subcommand string, filter ...string) err
 					album.show(out, artist, false)
 				}
 			case "all by":
-				// TODO: Handle no artist
 				if len(filter) != 1 {
+					return ErrWrongNumberOfArtists
+				}
+				if filter[0] == "" {
 					return ErrWrongNumberOfArtists
 				}
 				if filter[0] == artist {
 					album.show(out, artist, true)
 				}
 			case "unplayed by":
-				// TODO: Handle no artist
 				if len(filter) != 1 {
+					return ErrWrongNumberOfArtists
+				}
+				if filter[0] == "" {
 					return ErrWrongNumberOfArtists
 				}
 				if filter[0] == artist && !album.IsPlayed {
 					album.show(out, artist, false)
 				}
 			default:
-				// TODO: Unrecognized command
-				// album.show(out, artist)
+				return ErrInvalidSubcommand
 			}
 		}
 	}
 
-	if _, err := fmt.Fprintln(out); err != nil {
-		return err
-	}
+	fmt.Fprintln(out)
 
 	return nil
 }
@@ -99,7 +99,7 @@ type Album struct {
 	IsPlayed bool
 }
 
-func (a *Album) show(out io.Writer, artist string, showPlayedStatus bool) error {
+func (a *Album) show(out io.Writer, artist string, showPlayedStatus bool) {
 	var playedStatus string
 	if showPlayedStatus {
 		if a.IsPlayed {
@@ -108,10 +108,7 @@ func (a *Album) show(out io.Writer, artist string, showPlayedStatus bool) error 
 			playedStatus = " (unplayed)"
 		}
 	}
-	if _, err := fmt.Fprintf(out, "%q by %s%s\n", a.Name, artist, playedStatus); err != nil {
-		return err
-	}
-	return nil
+	fmt.Fprintf(out, "%q by %s%s\n", a.Name, artist, playedStatus)
 }
 
 // Sets album to "played"
